@@ -4,6 +4,7 @@
   (ice-9 format)
   (ice-9 string-fun) ; (string-replace-substring)
   (syntax threading))
+#!curly-infix
 
 (define* (string-ref-ord s i #:optional (c #\0))
   (- (char->integer (string-ref s i)) (char->integer c)))
@@ -12,7 +13,7 @@
   (let ((index (search s char-numeric?)))
     (cons index (string-ref-ord s index))))
 
-(define (digit-math lhs rhs) (+ (* 10 lhs) rhs))
+(define (digit-math lhs rhs) {{lhs * 10} + rhs})
 
 (define (part-a s)
   (digit-math
@@ -30,40 +31,32 @@
     ("eight" . 8)
     ("nine" . 9)
   ))
+(define string-digits-reversed (map (lambda (sd) (cons (string-reverse (car sd)) (cdr sd))) string-digits))
 
-(define (is-string-digit-prefix? s i)
+(define (is-string-digit-prefix? s i string-digits)
   (cdrn (find (lambda (sd) (string-prefix? (car sd) s 0 (string-length (car sd)) i)) string-digits)))
-(define (is-string-digit-suffix? s i)
-  (cdrn (find (lambda (sd) (string-suffix? (car sd) s 0 (string-length (car sd)) 0 i)) string-digits)))
 
-(define first-chars-of-string-digits (string->char-set "otfsen"))
-(define last-chars-of-string-digits (string->char-set "eorxnt"))
+(define first-chars-of-string-digits (list->char-set (map (lambda (sd) (string-ref (car sd) 0)) string-digits)))
+(define last-chars-of-string-digits (list->char-set (map (lambda (sd) (string-ref (car sd) 0)) string-digits-reversed)))
 
-(define (find-possible-string-digit s)
+(define (find-possible-string-digit s first-chars digits)
   (let loop
-      ((i (string-index s first-chars-of-string-digits)))
+      ((i (string-index s first-chars)))
     (if i 
-      (let ((d (is-string-digit-prefix? s i)))
+      (let ((d (is-string-digit-prefix? s i digits)))
         (if d (cons i d)
-          (loop (string-index s first-chars-of-string-digits (1+ i)))))
+          (loop (string-index s first-chars (1+ i)))))
       #f)
   ))
 
-(define (rfind-possible-string-digit s)
-  (let loop
-      ((i (string-rindex s last-chars-of-string-digits)))
-    (if (and i (> i 1)) 
-      (let ((d (is-string-digit-suffix? s (1+ i))))
-        (if d (cons i d)
-          (loop (string-rindex s last-chars-of-string-digits 0 i))))
-      #f)
-  ))
+(define (find-possible-string-digit-reverse s)
+  (let ((d (find-possible-string-digit (string-reverse s) last-chars-of-string-digits string-digits-reversed)))
+    (if d (cons (- (string-length s) (car d)) (cdr d)) #f)))
 
 (define (part-b s)
-  (display* s)
-  (display* (digit-math
-    (cdr (min-pair (display* (find-possible-numeric-digit s string-index)) (display* (find-possible-string-digit s))))
-    (cdr (max-pair (display* (find-possible-numeric-digit s string-rindex)) (display* (rfind-possible-string-digit s)))))))
+  (digit-math
+    (cdr (min-pair (find-possible-numeric-digit s string-index) (find-possible-string-digit s first-chars-of-string-digits string-digits)))
+    (cdr (max-pair (find-possible-numeric-digit s string-rindex) (find-possible-string-digit-reverse s)))))
 
 (define (process proc)
   (lambda (port)

@@ -1,7 +1,6 @@
-#!curly-infix
-
 (use-modules
   (srfi srfi-1) ; list
+  (srfi srfi-11) ; let-values
   (srfi srfi-41) ; stream
   (ice-9 textual-ports)
   (ice-9 rdelim))
