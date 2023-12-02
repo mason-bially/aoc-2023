@@ -14,3 +14,7 @@
     (if (eof-object? read) stream-null 
       (stream-cons read (stream-readlines port)))
   ))
+
+(define (display* v)
+  (format #t "~a\n" v)
+  v)
