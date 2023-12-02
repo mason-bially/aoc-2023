@@ -1,5 +1,7 @@
+#!curly-infix
 
 (use-modules
+  (srfi srfi-1) ; list
   (srfi srfi-41) ; stream
   (ice-9 textual-ports)
   (ice-9 rdelim))
@@ -14,6 +16,16 @@
     (if (eof-object? read) stream-null 
       (stream-cons read (stream-readlines port)))
   ))
+
+(define (cdrn p)
+  (if p (cdr p) p))
+(define (carn p)
+  (if p (car p) p))
+
+(define (max-pair a b)
+  (if (and b (> (car b) (car a))) b a))
+(define (min-pair a b)
+  (if (and b (< (car b) (car a))) b a))
 
 (define (display* v)
   (format #t "~a\n" v)

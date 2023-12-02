@@ -8,21 +8,62 @@
 (define* (string-ref-ord s i #:optional (c #\0))
   (- (char->integer (string-ref s i)) (char->integer c)))
 
+(define (find-possible-numeric-digit s search)
+  (let ((index (search s char-numeric?)))
+    (cons index (string-ref-ord s index))))
+
+(define (digit-math lhs rhs) (+ (* 10 lhs) rhs))
+
 (define (part-a s)
-  (+ (* 10 (string-ref-ord s (string-index s char-numeric?)))
-     (string-ref-ord s (string-rindex s char-numeric?))))
+  (digit-math
+    (cdr (find-possible-numeric-digit s string-index))
+    (cdr (find-possible-numeric-digit s string-rindex))))
+
+(define string-digits '(
+    ("one" . 1)
+    ("two" . 2)
+    ("three" . 3)
+    ("four" . 4)
+    ("five" . 5)
+    ("six" . 6)
+    ("seven" . 7)
+    ("eight" . 8)
+    ("nine" . 9)
+  ))
+
+(define (is-string-digit-prefix? s i)
+  (cdrn (find (lambda (sd) (string-prefix? (car sd) s 0 (string-length (car sd)) i)) string-digits)))
+(define (is-string-digit-suffix? s i)
+  (cdrn (find (lambda (sd) (string-suffix? (car sd) s 0 (string-length (car sd)) 0 i)) string-digits)))
+
+(define first-chars-of-string-digits (string->char-set "otfsen"))
+(define last-chars-of-string-digits (string->char-set "eorxnt"))
+
+(define (find-possible-string-digit s)
+  (let loop
+      ((i (string-index s first-chars-of-string-digits)))
+    (if i 
+      (let ((d (is-string-digit-prefix? s i)))
+        (if d (cons i d)
+          (loop (string-index s first-chars-of-string-digits (1+ i)))))
+      #f)
+  ))
+
+(define (rfind-possible-string-digit s)
+  (let loop
+      ((i (string-rindex s last-chars-of-string-digits)))
+    (if (and i (> i 1)) 
+      (let ((d (is-string-digit-suffix? s (1+ i))))
+        (if d (cons i d)
+          (loop (string-rindex s last-chars-of-string-digits 0 i))))
+      #f)
+  ))
 
 (define (part-b s)
-  (part-a (~> s
-    (string-replace-substring "one" "1")
-    (string-replace-substring "two" "2")
-    (string-replace-substring "three" "3")
-    (string-replace-substring "four" "4")
-    (string-replace-substring "five" "5")
-    (string-replace-substring "six" "6")
-    (string-replace-substring "seven" "7")
-    (string-replace-substring "eight" "8")
-    (string-replace-substring "nine" "9"))))
+  (display* s)
+  (display* (digit-math
+    (cdr (min-pair (display* (find-possible-numeric-digit s string-index)) (display* (find-possible-string-digit s))))
+    (cdr (max-pair (display* (find-possible-numeric-digit s string-rindex)) (display* (rfind-possible-string-digit s)))))))
 
 (define (process proc)
   (lambda (port)
