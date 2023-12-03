@@ -58,12 +58,6 @@
     (cdr (min-pair (find-possible-numeric-digit s string-index) (find-possible-string-digit s first-chars-of-string-digits string-digits)))
     (cdr (max-pair (find-possible-numeric-digit s string-rindex) (find-possible-string-digit-reverse s)))))
 
-(define (process proc)
-  (lambda (port)
-    (~>> (stream-readlines port)
-      (stream-map proc)
-      (stream-fold + 0))))
-
 (display (format #f "A: ~a\nB: ~a\n"
-  (call-with-puzzle (process part-a))
-  (call-with-puzzle (process part-b))))
+  (call-with-puzzle (process-puzzle part-a))
+  (call-with-puzzle (process-puzzle part-b))))

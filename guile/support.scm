@@ -1,11 +1,11 @@
+(add-to-load-path (string-append (dirname (current-filename)) "/site-dir"))
 (use-modules
   (srfi srfi-1) ; list
   (srfi srfi-11) ; let-values
   (srfi srfi-41) ; stream
   (ice-9 textual-ports)
-  (ice-9 rdelim))
-
-(add-to-load-path (string-append (dirname (current-filename)) "/site-dir"))
+  (ice-9 rdelim)
+  (syntax threading))
 
 (define (call-with-puzzle proc)
   (call-with-input-file "../input.txt" proc))
@@ -29,3 +29,9 @@
 (define (display* v)
   (format #t "~a\n" v)
   v)
+
+(define* (process-puzzle proc #:optional (fold +) (base 0))
+  (lambda (port)
+    (~>> (stream-readlines port)
+      (stream-map proc)
+      (stream-fold fold base))))
